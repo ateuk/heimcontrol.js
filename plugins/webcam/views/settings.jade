@@ -30,6 +30,7 @@ div.container
                 option(disabled="disabled",selected=(item.method == '')) Choose Method
                 option(value="streamer",selected=(item.method == 'streamer')) streamer
                 option(value="motion",selected=(item.method == 'motion')) motion
+                option(value="raspistill",selected=(item.method == 'raspistill')) raspistill
               div.switch-container
                 div.streamer(class=(item.method != 'streamer' ? 'hidden' : ''))
                   label(for="input") Input Device:
@@ -40,6 +41,11 @@ div.container
                   label(for="interval") Interval in seconds:
                   input(type="text", name="data[#{i}][interval]", placeholder="10", required="1", value="#{item.interval}", pattern="^[0-9]*$")
                   input(type="hidden", name="data[#{i}][_id]", value="#{item._id}")
+
+                div.raspistill(class=(item.method != 'raspistill' ? 'hidden' : ''))
+                  label(for="raspistill_interval") Interval in seconds:
+                  input(type="text", name="data[#{i}][raspistill_interval]", placeholder="10", required="1", value="#{item.raspistill_interval}", pattern="^[0-9]*$")
+
                 div.motion(class=(item.method != 'motion' ? 'hidden' : ''))
                   label(for="port") Stream Port:
                   input(type="text", name="data[#{i}][port]", placeholder="8082", required="1", value="#{item.port}")
@@ -66,6 +72,7 @@ div.plugin-container.webcam.settings#template(style="display: none;")
       option(disabled="disabled",selected="true") Choose Method
       option(value="streamer") streamer
       option(value="motion") motion
+      option(value="raspistill") raspistill
     div.switch-container
       div.streamer.hidden
         label(for="input") Input Device:
@@ -74,7 +81,11 @@ div.plugin-container.webcam.settings#template(style="display: none;")
             option(value="#{input}") #{input}
         label(for="interval") Interval in seconds:
         input(type="text", name="data[%i%][interval]", placeholder="10", required="1", pattern="^[0-9]*$")
-    
+
+      div.raspistill.hidden
+        label(for="raspistill_interval") Interval in seconds:
+        input(type="text", name="data[%i%][raspistill_interval]", placeholder="10", required="1", pattern="^[0-9]*$")
+
       div.motion.hidden
         label(for="url") Stream Port:
         input(type="text", name="data[%i%][port]", placeholder="8082", required="1")

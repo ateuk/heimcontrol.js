@@ -77,26 +77,27 @@ define([ 'child_process', 'delivery', 'fs', 'http' ], function( ChildProcess, De
       collection.find().toArray(function(err, result) {
         if ((!err) && (result.length > 0)) {
           result.forEach(function(item) {
-
             if (item.method == 'streamer') {
               function capture() {
                 if (that.app.get('clients').length > 0) {
                   var filename = '/tmp/' + item._id + '.jpeg';
-                  that.streamer(item.input, filename, that.webcamResolution, function(err, result) {
-                    if (err) {
-                      console.log(err);
-                    } else {
-                      that.deliveryList.forEach(function(delivery) {
-                        delivery.send({
-                          name: item._id + '.jpg',
-                          path : filename,
-                        });
-                      });
-                    }
-                  });             
+                  var deliverImage = that.createDeliverStillImageFunction(filename, item._id);
+                  that.streamer(item.input, filename, that.webcamResolution, deliverImage); 
                 }
               }
               var intervalId = setInterval(capture, parseInt(item.interval)*1000);
+              that.webcamList.push(intervalId);
+            }
+
+            if (item.method == 'raspistill') {
+              function capture() {
+                if (that.app.get('clients').length > 0) {
+                  var filename = '/tmp/' + item._id + '.jpeg';
+                  var deliverImage = that.createDeliverStillImageFunction(filename, item._id);
+                  that.raspistill(item.input, filename, that.webcamResolution, deliverImage);
+                }
+              }
+              var intervalId = setInterval(capture, parseInt(item.raspistill_interval)*1000);
               that.webcamList.push(intervalId);
             }
 
@@ -161,6 +162,58 @@ define([ 'child_process', 'delivery', 'fs', 'http' ], function( ChildProcess, De
     });    
   }
   /**
+   * Create an image using raspistill 
+   *
+   * @method raspistill 
+   * @param {String} input The input to use, e.g. '/dev/video0'
+   * @param {String} output The output file, e.g. '/tmp/image.jpg'
+   * @param {String} resolution The resolution to use, e.g. '1280x720'
+   * @param {Function} callback The callback method to execute after manipulation
+   * @param {String} callback.err null if no error occured, otherwise the error
+   * @param {Object} callback.result The result of the exec call
+   */
+  Webcam.prototype.raspistill = function(input, output, resolution, callback) {
+
+    var exec = ChildProcess.exec;
+    var splitResolution = resolution.split("x");
+    var width = splitResolution[0]; 
+    var height = splitResolution[1]; 
+    var cmd = 'raspistill --timeout 1 -o ' + output + ' -w ' + width + ' -h ' + height;
+    exec(cmd, function(err, stdout, stderr) {
+      if(err) {
+        callback(err);
+      } else {
+        callback(null, stdout);
+      }
+    });    
+  }
+
+  /**
+   * Delivers a still image to the client. 
+   *
+   * @method createDeliverStillImageFunction 
+   * @param {filename} filename The local path to the image
+   * @param {string} itemId The id of the item to send an image to
+   * @param {String} err null if no error occured, otherwise the error
+   * @param {Object} result The manipulated items
+   */
+  Webcam.prototype.createDeliverStillImageFunction = function(filename, itemId, err, result) {
+    var that = this;
+    return function(err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        that.deliveryList.forEach(function(delivery) {
+          delivery.send({
+            name: itemId + '.jpg',
+            path : filename,
+          });
+        });
+      }
+    };
+  }
+
+  /**
    * Manipulate the items array before render
    *
    * @method beforeRender
@@ -174,13 +227,13 @@ define([ 'child_process', 'delivery', 'fs', 'http' ], function( ChildProcess, De
     var devList = Fs.readdirSync('/dev/');
     var deviceList = [];
     devList.forEach(function(dev) {
-      if (dev.substr(0,5) == 'video') {
+      if (dev.substr(0,5) == 'video' || dev == 'vchiq') {
         deviceList.push('/dev/' + dev);
       }
     })
     items.forEach(function(item) {
       if (deviceList.indexOf(item.input)==-1) {
-        console.log('Webcam Plugin: Device "' + item.input + '" not found.');
+        console.log('Webcam Plugin: Device "' + item.input + '" not found in device list ' + deviceList);
         var i = items.indexOf(item);
         items.splice(i,1);
       }

@@ -1,6 +1,6 @@
 each item in items
   div.plugin-container.webcam
-    - if (item.method == 'streamer')
+    - if (item.method == 'streamer' || item.method == 'raspistill')
       p
         strong #{item.input}&nbsp;
         span.muted &nbsp;Webcam
