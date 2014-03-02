@@ -73,6 +73,7 @@ define([ 'crypto', 'cookie', 'fs' ], function(crypto, cookie, fs) {
           function render(items, meta) {
             var meta = meta || {};
             app.get('jade').renderFile(__dirname + '/../plugins/' + plugin.id + '/views/' + type + '.jade', {
+              cache: true,
               items: items,
               meta: meta
             }, function(err, result) {
@@ -238,6 +239,7 @@ define([ 'crypto', 'cookie', 'fs' ], function(crypto, cookie, fs) {
                 function render(items, meta) {
                   var meta = meta || {};
                   req.app.get('jade').renderFile(__dirname + '/../plugins/' + plugin.id + '/views/settings.jade', {
+                    cache: true,
                     items: items,
                     meta: meta
                   }, function(err, html) {
@@ -325,6 +327,7 @@ define([ 'crypto', 'cookie', 'fs' ], function(crypto, cookie, fs) {
                     function render(items, meta) {
                       var meta = meta || {};
                       req.app.get('jade').renderFile(__dirname + '/../plugins/' + plugin.id + '/views/settings.jade', {
+                        cache: true,
                         items: items,
                         meta: meta,
                         success: 'Settings have been updated'
