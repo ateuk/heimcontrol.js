@@ -38,3 +38,10 @@ each item in items
         button.btn.btn-inverse.btn-large.socket(type="button", data-socket="arduino-led", data-value="0", data-id="#{item._id}", class=(item.value == 0 ? 'active' : '')) 
           i.icon-circle-blank
           | Off
+    - if (item.method == 'step')
+      p.description
+        span.muted Step:&nbsp;
+        strong #{item.description} 
+      button.btn.btn-large.socket(type="button", data-id="#{item._id}", data-socket="arduino-step", data-value="1")
+        i.icon-off.icon-large
+        | #{item.description}

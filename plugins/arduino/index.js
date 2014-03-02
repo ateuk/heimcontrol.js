@@ -50,6 +50,10 @@ define([ 'duino' ], function(duino) {
       socket.on('arduino-led', function(data) {
         that.led(data);
       });
+      // Arduino toggle
+      socket.on('arduino-step', function(data) {
+        that.step(data);
+      });
     });
     
   };
@@ -148,6 +152,36 @@ define([ 'duino' ], function(duino) {
         }else {
           that.pins[item.pin].off();
         }
+      } else {
+        console.log(err);
+      }
+    });
+  };
+
+  /**
+   * Sets a pin value to HIGH for 1 second. 
+   * 
+   * @method step
+   * @param {Object} data The websocket data from the client
+   * @param {String} data.id The ID of the database entry from the step to use
+   */
+  Arduino.prototype.step = function(data) {
+    var that = this;
+    this.pluginHelper.findItem(that.collection, data.id, function(err, item, collection) {
+      if ((!err) && (item)) {
+        // Inform clients over websockets
+        that.app.get('sockets').emit('arduino-step', data);
+
+        item.value = (parseInt(data.value));
+        that.values[item._id] = item.value;
+
+        var pin = parseInt(item.pin);
+        that.board.pinMode(pin, 'out')
+        that.board.digitalWrite(pin, that.board.HIGH)
+        setTimeout(function() {
+          that.board.digitalWrite(pin, that.board.LOW)
+        }, 1000);
+
       } else {
         console.log(err);
       }
