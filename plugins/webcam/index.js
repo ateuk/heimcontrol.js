@@ -178,7 +178,7 @@ define([ 'child_process', 'delivery', 'fs', 'http' ], function( ChildProcess, De
     var splitResolution = resolution.split("x");
     var width = splitResolution[0]; 
     var height = splitResolution[1]; 
-    var cmd = 'raspistill --timeout 1 -o ' + output + ' -w ' + width + ' -h ' + height;
+    var cmd = 'raspistill --timeout 3 -o ' + output; // + ' -w ' + width + ' -h ' + height;
     exec(cmd, function(err, stdout, stderr) {
       if(err) {
         callback(err);
